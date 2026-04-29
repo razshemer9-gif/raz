@@ -10,7 +10,6 @@
 </head>
 <body>
 <div id="app">
-  <!-- Top Navigation -->
   <header class="app-header">
     <div class="header-inner">
       <h1 class="app-title">סקר נגישות מתו"ס</h1>
@@ -19,16 +18,15 @@
         <button id="btn-templates" class="icon-btn" title="תבניות">📂</button>
       </div>
     </div>
-    <!-- Tab Bar -->
     <nav class="tab-bar">
       <button class="tab-btn active" data-tab="cover">עמוד שער</button>
-      <button class="tab-btn" data-tab="checklist">רשימת פרמטרים</button>
+      <button class="tab-btn" data-tab="checklist">פרמטרים</button>
       <button class="tab-btn" data-tab="preview">תצוגה מקדימה</button>
     </nav>
   </header>
 
   <main class="app-main">
-    <!-- Tab: Cover Page -->
+    <!-- Tab: Cover -->
     <section id="tab-cover" class="tab-content active">
       <div class="card">
         <h2 class="section-title">פרטי הדוח</h2>
@@ -71,9 +69,9 @@
             <p>לחץ להוספת תמונה</p>
           </div>
         </div>
-        <input type="file" id="photo-input" accept="image/*" capture="environment" style="display:none">
+        <input type="file" id="photo-input" accept="image/*" style="display:none">
         <div class="btn-row">
-          <button class="btn-secondary" onclick="document.getElementById('photo-input').click()">בחר / צלם תמונה</button>
+          <button class="btn-secondary" id="btn-pick-photo">בחר / צלם תמונה</button>
           <button class="btn-ghost" id="btn-remove-photo" style="display:none">הסר תמונה</button>
         </div>
       </div>
@@ -90,19 +88,14 @@
         <button class="btn-secondary" id="btn-load-template">טען תבנית</button>
         <button class="btn-ghost" id="btn-save-template">שמור תבנית</button>
       </div>
-
       <div id="checklist-summary" class="checklist-summary">
         <span id="summary-ok">תקין: 0</span>
         <span id="summary-nok">לא תקין: 0</span>
-        <span id="summary-cost">עלות משוערת: ₪0</span>
+        <span id="summary-cost">עלות: ₪0</span>
       </div>
-
-      <div id="checklist-items" class="checklist-items">
-        <!-- items injected by JS -->
-      </div>
-
+      <div id="checklist-items" class="checklist-items"></div>
       <div class="btn-row bottom-actions">
-        <button class="btn-primary full-width" id="btn-generate-pdf">צור PDF</button>
+        <button class="btn-primary full-width" id="btn-go-preview">תצוגה מקדימה ← </button>
       </div>
     </section>
 
@@ -110,41 +103,39 @@
     <section id="tab-preview" class="tab-content">
       <div class="preview-frame-wrap">
         <div id="pdf-preview" class="pdf-preview">
-          <div class="preview-placeholder">
-            <p>לחץ על "תצוגה מקדימה" לראות את הדוח</p>
-          </div>
+          <div class="preview-placeholder"><p>עבור לתצוגה מקדימה</p></div>
         </div>
       </div>
       <div class="btn-row bottom-actions">
-        <button class="btn-secondary full-width" id="btn-refresh-preview">רענן תצוגה מקדימה</button>
+        <button class="btn-secondary full-width" id="btn-refresh-preview">רענן תצוגה</button>
         <button class="btn-primary full-width" id="btn-download-pdf">הורד PDF</button>
       </div>
     </section>
   </main>
 </div>
 
-<!-- Modal: Add/Edit Parameter -->
-<div id="modal-param" class="modal" style="display:none">
-  <div class="modal-backdrop"></div>
+<!-- Modal: Param -->
+<div id="modal-param" class="modal" style="display:none" role="dialog">
+  <div class="modal-backdrop" id="backdrop-param"></div>
   <div class="modal-box">
     <h3 class="modal-title">פרמטר נגישות</h3>
     <div class="form-group">
-      <label>שם הפרמטר (עברית)</label>
+      <label>שם הפרמטר</label>
       <input type="text" id="param-title" placeholder="כגון: שלט כניסה נגישה">
     </div>
     <div class="form-group">
       <label>סטטוס</label>
       <div class="status-toggle">
-        <button class="status-btn ok active" data-val="ok">✓ תקין</button>
-        <button class="status-btn nok" data-val="nok">✗ לא תקין</button>
-        <button class="status-btn na" data-val="na">— לא רלוונטי</button>
+        <button class="status-btn ok" data-val="ok" id="sbtn-ok">✓ תקין</button>
+        <button class="status-btn nok" data-val="nok" id="sbtn-nok">✗ לא תקין</button>
+        <button class="status-btn na" data-val="na" id="sbtn-na">— לא רלוונטי</button>
       </div>
     </div>
     <div class="form-group">
       <label>ממצאים / הערות</label>
       <textarea id="param-notes" rows="3" placeholder="תיאור הממצא..."></textarea>
     </div>
-    <div class="form-group" id="cost-group">
+    <div class="form-group" id="cost-group" style="display:none">
       <label>עלות משוערת לתיקון (₪)</label>
       <input type="number" id="param-cost" placeholder="0" min="0">
     </div>
@@ -155,33 +146,9 @@
   </div>
 </div>
 
-<!-- Modal: Templates -->
-<div id="modal-templates" class="modal" style="display:none">
-  <div class="modal-backdrop"></div>
-  <div class="modal-box">
-    <h3 class="modal-title">תבניות רשימת פרמטרים</h3>
-    <div id="template-list" class="template-list"></div>
-    <div class="modal-actions">
-      <button class="btn-ghost" id="btn-templates-close">סגור</button>
-    </div>
-  </div>
-</div>
-
-<!-- Modal: Saved Reports -->
-<div id="modal-reports" class="modal" style="display:none">
-  <div class="modal-backdrop"></div>
-  <div class="modal-box">
-    <h3 class="modal-title">דוחות שמורים</h3>
-    <div id="reports-list" class="template-list"></div>
-    <div class="modal-actions">
-      <button class="btn-ghost" id="btn-reports-close">סגור</button>
-    </div>
-  </div>
-</div>
-
 <!-- Modal: Load Template -->
-<div id="modal-load-template" class="modal" style="display:none">
-  <div class="modal-backdrop"></div>
+<div id="modal-load-template" class="modal" style="display:none" role="dialog">
+  <div class="modal-backdrop" id="backdrop-load-tpl"></div>
   <div class="modal-box">
     <h3 class="modal-title">בחר תבנית</h3>
     <div id="load-template-list" class="template-list"></div>
@@ -191,9 +158,9 @@
   </div>
 </div>
 
-<!-- Modal: Save Template Name -->
-<div id="modal-save-template" class="modal" style="display:none">
-  <div class="modal-backdrop"></div>
+<!-- Modal: Save Template -->
+<div id="modal-save-template" class="modal" style="display:none" role="dialog">
+  <div class="modal-backdrop" id="backdrop-save-tpl"></div>
   <div class="modal-box">
     <h3 class="modal-title">שמור תבנית</h3>
     <div class="form-group">
@@ -207,7 +174,34 @@
   </div>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<!-- Modal: Templates Manager -->
+<div id="modal-templates" class="modal" style="display:none" role="dialog">
+  <div class="modal-backdrop" id="backdrop-tpl-mgr"></div>
+  <div class="modal-box">
+    <h3 class="modal-title">תבניות שמורות</h3>
+    <div id="template-list" class="template-list"></div>
+    <div class="modal-actions">
+      <button class="btn-ghost" id="btn-templates-close">סגור</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Reports -->
+<div id="modal-reports" class="modal" style="display:none" role="dialog">
+  <div class="modal-backdrop" id="backdrop-reports"></div>
+  <div class="modal-box">
+    <h3 class="modal-title">דוחות שמורים</h3>
+    <div id="reports-list" class="template-list"></div>
+    <div class="modal-actions">
+      <button class="btn-ghost" id="btn-reports-close">סגור</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"
+  onerror="window._jspdfFailed=true"></script>
 <script src="app.js"></script>
 </body>
 </html>
