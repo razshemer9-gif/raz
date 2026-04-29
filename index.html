@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<title>סקר נגישות מתו"ס</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="app">
+  <!-- Top Navigation -->
+  <header class="app-header">
+    <div class="header-inner">
+      <h1 class="app-title">סקר נגישות מתו"ס</h1>
+      <div class="header-actions">
+        <button id="btn-reports" class="icon-btn" title="דוחות שמורים">📋</button>
+        <button id="btn-templates" class="icon-btn" title="תבניות">📂</button>
+      </div>
+    </div>
+    <!-- Tab Bar -->
+    <nav class="tab-bar">
+      <button class="tab-btn active" data-tab="cover">עמוד שער</button>
+      <button class="tab-btn" data-tab="checklist">רשימת פרמטרים</button>
+      <button class="tab-btn" data-tab="preview">תצוגה מקדימה</button>
+    </nav>
+  </header>
+
+  <main class="app-main">
+    <!-- Tab: Cover Page -->
+    <section id="tab-cover" class="tab-content active">
+      <div class="card">
+        <h2 class="section-title">פרטי הדוח</h2>
+        <div class="form-group">
+          <label>שם מקום / עסק</label>
+          <input type="text" id="field-business" placeholder="שם העסק או המקום">
+        </div>
+        <div class="form-group">
+          <label>שם לקוח</label>
+          <input type="text" id="field-client" placeholder="שם הלקוח">
+        </div>
+        <div class="form-group">
+          <label>כתובת</label>
+          <input type="text" id="field-address" placeholder="כתובת המקום">
+        </div>
+        <div class="form-group">
+          <label>תאריך הסקר</label>
+          <input type="date" id="field-date">
+        </div>
+        <div class="form-group">
+          <label>שם יועץ</label>
+          <input type="text" id="field-consultant" placeholder="שם יועץ הנגישות">
+        </div>
+        <div class="form-group">
+          <label>מספר רישיון</label>
+          <input type="text" id="field-license" placeholder="מספר רישיון יועץ">
+        </div>
+        <div class="form-group">
+          <label>הערות כלליות</label>
+          <textarea id="field-notes" rows="3" placeholder="הערות כלליות לדוח"></textarea>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2 class="section-title">תמונת שער</h2>
+        <div class="photo-area" id="photo-area">
+          <img id="cover-photo-preview" src="" alt="" style="display:none">
+          <div id="photo-placeholder" class="photo-placeholder">
+            <span class="photo-icon">📷</span>
+            <p>לחץ להוספת תמונה</p>
+          </div>
+        </div>
+        <input type="file" id="photo-input" accept="image/*" capture="environment" style="display:none">
+        <div class="btn-row">
+          <button class="btn-secondary" onclick="document.getElementById('photo-input').click()">בחר / צלם תמונה</button>
+          <button class="btn-ghost" id="btn-remove-photo" style="display:none">הסר תמונה</button>
+        </div>
+      </div>
+
+      <div class="btn-row bottom-actions">
+        <button class="btn-primary full-width" id="btn-save-draft">שמור טיוטה</button>
+      </div>
+    </section>
+
+    <!-- Tab: Checklist -->
+    <section id="tab-checklist" class="tab-content">
+      <div class="checklist-toolbar">
+        <button class="btn-primary" id="btn-add-param">+ הוסף פרמטר</button>
+        <button class="btn-secondary" id="btn-load-template">טען תבנית</button>
+        <button class="btn-ghost" id="btn-save-template">שמור תבנית</button>
+      </div>
+
+      <div id="checklist-summary" class="checklist-summary">
+        <span id="summary-ok">תקין: 0</span>
+        <span id="summary-nok">לא תקין: 0</span>
+        <span id="summary-cost">עלות משוערת: ₪0</span>
+      </div>
+
+      <div id="checklist-items" class="checklist-items">
+        <!-- items injected by JS -->
+      </div>
+
+      <div class="btn-row bottom-actions">
+        <button class="btn-primary full-width" id="btn-generate-pdf">צור PDF</button>
+      </div>
+    </section>
+
+    <!-- Tab: Preview -->
+    <section id="tab-preview" class="tab-content">
+      <div class="preview-frame-wrap">
+        <div id="pdf-preview" class="pdf-preview">
+          <div class="preview-placeholder">
+            <p>לחץ על "תצוגה מקדימה" לראות את הדוח</p>
+          </div>
+        </div>
+      </div>
+      <div class="btn-row bottom-actions">
+        <button class="btn-secondary full-width" id="btn-refresh-preview">רענן תצוגה מקדימה</button>
+        <button class="btn-primary full-width" id="btn-download-pdf">הורד PDF</button>
+      </div>
+    </section>
+  </main>
+</div>
+
+<!-- Modal: Add/Edit Parameter -->
+<div id="modal-param" class="modal" style="display:none">
+  <div class="modal-backdrop"></div>
+  <div class="modal-box">
+    <h3 class="modal-title">פרמטר נגישות</h3>
+    <div class="form-group">
+      <label>שם הפרמטר (עברית)</label>
+      <input type="text" id="param-title" placeholder="כגון: שלט כניסה נגישה">
+    </div>
+    <div class="form-group">
+      <label>סטטוס</label>
+      <div class="status-toggle">
+        <button class="status-btn ok active" data-val="ok">✓ תקין</button>
+        <button class="status-btn nok" data-val="nok">✗ לא תקין</button>
+        <button class="status-btn na" data-val="na">— לא רלוונטי</button>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>ממצאים / הערות</label>
+      <textarea id="param-notes" rows="3" placeholder="תיאור הממצא..."></textarea>
+    </div>
+    <div class="form-group" id="cost-group">
+      <label>עלות משוערת לתיקון (₪)</label>
+      <input type="number" id="param-cost" placeholder="0" min="0">
+    </div>
+    <div class="modal-actions">
+      <button class="btn-primary" id="btn-param-save">שמור</button>
+      <button class="btn-ghost" id="btn-param-cancel">ביטול</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Templates -->
+<div id="modal-templates" class="modal" style="display:none">
+  <div class="modal-backdrop"></div>
+  <div class="modal-box">
+    <h3 class="modal-title">תבניות רשימת פרמטרים</h3>
+    <div id="template-list" class="template-list"></div>
+    <div class="modal-actions">
+      <button class="btn-ghost" id="btn-templates-close">סגור</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Saved Reports -->
+<div id="modal-reports" class="modal" style="display:none">
+  <div class="modal-backdrop"></div>
+  <div class="modal-box">
+    <h3 class="modal-title">דוחות שמורים</h3>
+    <div id="reports-list" class="template-list"></div>
+    <div class="modal-actions">
+      <button class="btn-ghost" id="btn-reports-close">סגור</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Load Template -->
+<div id="modal-load-template" class="modal" style="display:none">
+  <div class="modal-backdrop"></div>
+  <div class="modal-box">
+    <h3 class="modal-title">בחר תבנית</h3>
+    <div id="load-template-list" class="template-list"></div>
+    <div class="modal-actions">
+      <button class="btn-ghost" id="btn-load-template-close">סגור</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Save Template Name -->
+<div id="modal-save-template" class="modal" style="display:none">
+  <div class="modal-backdrop"></div>
+  <div class="modal-box">
+    <h3 class="modal-title">שמור תבנית</h3>
+    <div class="form-group">
+      <label>שם התבנית</label>
+      <input type="text" id="template-name-input" placeholder="כגון: בניין ציבורי ישן">
+    </div>
+    <div class="modal-actions">
+      <button class="btn-primary" id="btn-confirm-save-template">שמור</button>
+      <button class="btn-ghost" id="btn-cancel-save-template">ביטול</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
