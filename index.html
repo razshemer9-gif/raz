@@ -404,7 +404,7 @@ function refreshPhoto(){
 function renderChecklist(){
   var el = $('checklist-items');
   if(!state.params.length){
-    el.innerHTML = '<div class="empty-state">אין פרמטרים — לחץ "+ הוסף פרמטר" או "טען תבנית"</div>';
+    el.innerHTML = '<div class="empty-state">אין פרמטרים — לחץ "+  הוסף פרמטר" או "טען תבנית"</div>';
   } else {
     var html = '';
     for(var i=0;i<state.params.length;i++){
@@ -484,7 +484,7 @@ function openLoadTplModal(){
     html += '<div class="template-item-name">'+esc(t.name)+'</div>';
     html += '<div class="template-item-meta">'+t.params.length+' פרמטרים</div>';
     html += '</div><div class="template-item-actions">';
-    html += '<button class="btn-secondary" onclick="loadTpl(\''+t.id+'\')">טען</button>';
+    html += '<button class="btn-secondary" onclick="loadTpl(\''+t.id+'\')" >טען</button>';
     html += '</div></div>';
   }
   $('load-template-list').innerHTML = html || '<div class="empty-state">אין תבניות</div>';
@@ -520,7 +520,7 @@ function openManageTplModal(){
     html += '<div class="template-item-name">'+esc(t.name)+'</div>';
     html += '<div class="template-item-meta">'+t.params.length+' פרמטרים</div>';
     html += '</div><div class="template-item-actions">';
-    html += '<button class="btn-ghost btn-danger" onclick="confirmDelTpl(\''+t.id+'\')">מחק</button>';
+    html += '<button class="btn-ghost btn-danger" onclick="confirmDelTpl(\''+t.id+'\')" >מחק</button>';
     html += '</div></div>';
   }
   $('manage-tpl-list').innerHTML = html || '<div class="empty-state">אין תבניות מותאמות אישית</div>';
@@ -557,8 +557,8 @@ function openReportsModal(){
     html += '<div class="template-item-name">'+esc(d.business)+'</div>';
     html += '<div class="template-item-meta">'+new Date(d.savedAt).toLocaleDateString('he-IL')+'</div>';
     html += '</div><div class="template-item-actions">';
-    html += '<button class="btn-secondary" onclick="loadDraftById(\''+d.id+'\')">פתח</button>';
-    html += '<button class="btn-ghost btn-danger" onclick="confirmDelDraft(\''+d.id+'\')">מחק</button>';
+    html += '<button class="btn-secondary" onclick="loadDraftById(\''+d.id+'\')" >פתח</button>';
+    html += '<button class="btn-ghost btn-danger" onclick="confirmDelDraft(\''+d.id+'\')" >מחק</button>';
     html += '</div></div>';
   }
   $('reports-list').innerHTML = html || '<div class="empty-state">אין דוחות שמורים</div>';
