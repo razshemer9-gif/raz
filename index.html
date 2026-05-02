@@ -4,9 +4,152 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="mobile-web-app-capable" content="yes">
 <title>סקר נגישות מתו"ס</title>
-<link rel="stylesheet" href="style.css">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --blue: #1a4fa0; --blue-light: #2563c0; --blue-pale: #e8f0fb; --blue-dark: #0d3272;
+  --white: #ffffff; --gray-50: #f8f9fa; --gray-100: #f1f3f5; --gray-200: #e9ecef;
+  --gray-400: #adb5bd; --gray-600: #6c757d; --gray-800: #343a40;
+  --green: #198754; --green-light: #d1e7dd; --red: #dc3545; --red-light: #f8d7da;
+  --yellow: #ffc107; --yellow-light: #fff3cd;
+  --radius: 12px; --radius-sm: 8px;
+  --shadow: 0 2px 8px rgba(0,0,0,0.10); --shadow-lg: 0 4px 20px rgba(0,0,0,0.15);
+}
+html, body { height: 100%; font-family: Arial, sans-serif; font-size: 16px; color: var(--gray-800); background: var(--gray-100); direction: rtl; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+#app { min-height: 100vh; display: flex; flex-direction: column; max-width: 640px; margin: 0 auto; }
+
+/* Header */
+.app-header { position: sticky; top: 0; z-index: 100; background: var(--blue); box-shadow: var(--shadow-lg); }
+.header-inner { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px 8px; }
+.app-title { color: var(--white); font-size: 18px; font-weight: 700; }
+.header-actions { display: flex; gap: 8px; }
+.icon-btn { background: rgba(255,255,255,0.15); border: none; border-radius: 50%; width: 38px; height: 38px; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+
+/* Tabs */
+.tab-bar { display: flex; border-top: 1px solid rgba(255,255,255,0.2); }
+.tab-btn { flex: 1; background: transparent; border: none; color: rgba(255,255,255,0.7); padding: 10px 4px; font-size: 13px; font-weight: 600; cursor: pointer; border-bottom: 3px solid transparent; font-family: Arial, sans-serif; }
+.tab-btn.active { color: var(--white); border-bottom-color: var(--yellow); background: rgba(255,255,255,0.1); }
+
+/* Layout */
+.app-main { flex: 1; padding: 16px; padding-bottom: 80px; }
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+/* Cards */
+.card { background: var(--white); border-radius: var(--radius); padding: 16px; margin-bottom: 16px; box-shadow: var(--shadow); }
+.section-title { font-size: 16px; font-weight: 700; color: var(--blue); margin-bottom: 14px; padding-bottom: 8px; border-bottom: 2px solid var(--blue-pale); }
+
+/* Forms */
+.form-group { margin-bottom: 14px; }
+.form-group label { display: block; font-size: 13px; font-weight: 600; color: var(--gray-600); margin-bottom: 5px; }
+.form-group input, .form-group textarea { width: 100%; padding: 10px 12px; border: 1.5px solid var(--gray-200); border-radius: var(--radius-sm); font-size: 15px; font-family: Arial, sans-serif; color: var(--gray-800); background: var(--white); direction: rtl; -webkit-appearance: none; }
+.form-group input:focus, .form-group textarea:focus { outline: none; border-color: var(--blue-light); }
+.form-group textarea { resize: vertical; min-height: 80px; }
+
+/* Buttons */
+.btn-primary, .btn-secondary, .btn-ghost { display: inline-flex; align-items: center; justify-content: center; padding: 11px 20px; border-radius: var(--radius-sm); font-size: 14px; font-weight: 600; font-family: Arial, sans-serif; cursor: pointer; border: none; min-height: 44px; }
+.btn-primary { background: var(--blue); color: var(--white); }
+.btn-primary:active { background: var(--blue-dark); }
+.btn-secondary { background: var(--blue-pale); color: var(--blue); border: 1.5px solid var(--blue-light); }
+.btn-ghost { background: transparent; color: var(--gray-600); border: 1.5px solid var(--gray-200); }
+.btn-danger { background: var(--red-light); color: var(--red); border: 1.5px solid var(--red); }
+.full-width { width: 100%; }
+.btn-row { display: flex; gap: 10px; flex-wrap: wrap; }
+.bottom-actions { margin-top: 16px; }
+
+/* Photo */
+.photo-area { width: 100%; min-height: 180px; border: 2px dashed var(--gray-200); border-radius: var(--radius); display: flex; align-items: center; justify-content: center; overflow: hidden; margin-bottom: 12px; background: var(--gray-50); cursor: pointer; }
+.photo-area img { width: 100%; height: 100%; object-fit: cover; }
+.photo-placeholder { text-align: center; color: var(--gray-400); }
+.photo-icon { font-size: 40px; display: block; }
+.photo-placeholder p { margin-top: 8px; font-size: 14px; }
+
+/* Checklist */
+.checklist-toolbar { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+.checklist-summary { display: flex; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
+.checklist-summary span { padding: 5px 12px; border-radius: 20px; font-size: 13px; font-weight: 600; }
+#summary-ok { background: var(--green-light); color: var(--green); }
+#summary-nok { background: var(--red-light); color: var(--red); }
+#summary-cost { background: var(--yellow-light); color: #856404; }
+.checklist-items { display: flex; flex-direction: column; gap: 10px; }
+.param-item { background: var(--white); border-radius: var(--radius); padding: 14px; box-shadow: var(--shadow); border-right: 4px solid var(--gray-200); }
+.param-item.status-ok { border-right-color: var(--green); }
+.param-item.status-nok { border-right-color: var(--red); }
+.param-item.status-na { border-right-color: var(--gray-400); }
+.param-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.param-title { font-size: 15px; font-weight: 700; color: var(--gray-800); flex: 1; }
+.param-status-badge { font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 20px; white-space: nowrap; margin-right: 8px; }
+.status-ok .param-status-badge { background: var(--green-light); color: var(--green); }
+.status-nok .param-status-badge { background: var(--red-light); color: var(--red); }
+.status-na .param-status-badge { background: var(--gray-200); color: var(--gray-600); }
+.param-notes { font-size: 13px; color: var(--gray-600); margin-bottom: 6px; line-height: 1.5; }
+.param-cost { font-size: 13px; color: #856404; font-weight: 600; }
+.param-actions { display: flex; gap: 8px; margin-top: 10px; }
+.param-actions button { padding: 6px 14px; font-size: 13px; min-height: 36px; }
+
+/* Status toggle */
+.status-toggle { display: flex; gap: 8px; flex-wrap: wrap; }
+.status-btn { flex: 1; padding: 10px 8px; border-radius: var(--radius-sm); border: 2px solid var(--gray-200); background: var(--white); font-size: 14px; font-weight: 600; cursor: pointer; color: var(--gray-600); min-height: 44px; font-family: Arial, sans-serif; }
+.status-btn.ok.active { background: var(--green-light); border-color: var(--green); color: var(--green); }
+.status-btn.nok.active { background: var(--red-light); border-color: var(--red); color: var(--red); }
+.status-btn.na.active { background: var(--gray-200); border-color: var(--gray-400); color: var(--gray-600); }
+
+/* Modal */
+.modal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 1000; display: flex; align-items: flex-end; justify-content: center; }
+.modal-backdrop { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); }
+.modal-box { position: relative; background: var(--white); border-radius: var(--radius) var(--radius) 0 0; padding: 20px 16px; width: 100%; max-width: 640px; max-height: 90vh; overflow-y: auto; box-shadow: var(--shadow-lg); }
+.modal-title { font-size: 17px; font-weight: 700; color: var(--blue); margin-bottom: 16px; padding-bottom: 10px; border-bottom: 2px solid var(--blue-pale); }
+.modal-actions { display: flex; gap: 10px; margin-top: 16px; }
+
+/* Lists */
+.template-list { display: flex; flex-direction: column; gap: 10px; max-height: 50vh; overflow-y: auto; }
+.template-item { background: var(--gray-50); border: 1.5px solid var(--gray-200); border-radius: var(--radius-sm); padding: 12px 14px; display: flex; align-items: center; justify-content: space-between; }
+.template-item-name { font-weight: 600; font-size: 15px; }
+.template-item-meta { font-size: 12px; color: var(--gray-400); margin-top: 2px; }
+.template-item-actions { display: flex; gap: 8px; }
+.template-item-actions button { padding: 5px 12px; font-size: 13px; min-height: 34px; }
+.empty-state { text-align: center; color: var(--gray-400); padding: 24px 0; font-size: 14px; }
+
+/* Preview */
+.preview-frame-wrap { overflow-x: auto; border-radius: var(--radius); background: var(--gray-200); padding: 12px; }
+.pdf-preview { background: var(--white); border-radius: var(--radius-sm); min-height: 400px; box-shadow: var(--shadow-lg); overflow: hidden; direction: rtl; }
+.preview-placeholder { display: flex; align-items: center; justify-content: center; height: 400px; color: var(--gray-400); font-size: 14px; }
+.preview-page { width: 100%; padding: 24px 20px; border-bottom: 2px dashed var(--gray-200); direction: rtl; }
+.preview-page:last-child { border-bottom: none; }
+.preview-header-bar { background: var(--blue); color: var(--white); padding: 14px 20px; display: flex; align-items: center; justify-content: space-between; margin: -24px -20px 20px; }
+.preview-logo-area { font-size: 18px; font-weight: 800; }
+.preview-page-title { font-size: 13px; opacity: 0.8; }
+.cover-business-name { font-size: 24px; font-weight: 800; color: var(--blue); text-align: center; margin: 20px 0 8px; }
+.cover-subtitle { text-align: center; font-size: 15px; color: var(--gray-600); margin-bottom: 20px; }
+.cover-photo { width: 100%; height: 180px; object-fit: cover; border-radius: var(--radius-sm); margin-bottom: 16px; }
+.cover-details-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+.cover-details-table tr td { padding: 7px 10px; border-bottom: 1px solid var(--gray-100); font-size: 14px; }
+.cover-details-table td:first-child { font-weight: 700; color: var(--blue); width: 40%; }
+.preview-footer-bar { background: var(--blue-pale); color: var(--blue); padding: 8px 20px; font-size: 11px; display: flex; justify-content: space-between; margin: 20px -20px -24px; }
+.preview-checklist-item { border-radius: var(--radius-sm); padding: 10px 14px; margin-bottom: 8px; border-right: 4px solid var(--gray-200); font-size: 14px; }
+.preview-checklist-item.ok { background: #f0faf5; border-right-color: var(--green); }
+.preview-checklist-item.nok { background: #fff5f5; border-right-color: var(--red); }
+.preview-checklist-item.na { background: var(--gray-50); border-right-color: var(--gray-400); }
+.preview-item-title { font-weight: 700; margin-bottom: 4px; }
+.preview-item-status { font-size: 12px; font-weight: 700; }
+.ok .preview-item-status { color: var(--green); }
+.nok .preview-item-status { color: var(--red); }
+.na .preview-item-status { color: var(--gray-600); }
+.preview-item-notes { color: var(--gray-600); margin-top: 4px; font-size: 13px; }
+.preview-item-cost { color: #856404; margin-top: 2px; font-size: 12px; font-weight: 600; }
+.preview-section-title { font-size: 16px; font-weight: 800; color: var(--blue); border-bottom: 2px solid var(--blue-pale); padding-bottom: 8px; margin-bottom: 14px; }
+.summary-box { background: var(--blue-pale); border-radius: var(--radius-sm); padding: 14px; margin-bottom: 16px; display: flex; gap: 14px; flex-wrap: wrap; }
+.summary-stat { display: flex; flex-direction: column; align-items: center; }
+.summary-stat-num { font-size: 24px; font-weight: 800; color: var(--blue); }
+.summary-stat-label { font-size: 11px; color: var(--gray-600); margin-top: 2px; }
+
+/* Toast */
+#toast { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%) translateY(120px); background: var(--gray-800); color: var(--white); padding: 12px 24px; border-radius: 24px; font-size: 14px; font-weight: 600; z-index: 9999; transition: transform 0.3s; pointer-events: none; white-space: nowrap; }
+#toast.show { transform: translateX(-50%) translateY(0); }
+#toast.success { background: var(--green); }
+#toast.error { background: var(--red); }
+</style>
 </head>
 <body>
 <div id="app">
@@ -14,8 +157,8 @@
     <div class="header-inner">
       <h1 class="app-title">סקר נגישות מתו"ס</h1>
       <div class="header-actions">
-        <button id="btn-reports" class="icon-btn" title="דוחות שמורים">📋</button>
-        <button id="btn-templates" class="icon-btn" title="תבניות">📂</button>
+        <button id="btn-reports" class="icon-btn">📋</button>
+        <button id="btn-templates" class="icon-btn">📂</button>
       </div>
     </div>
     <nav class="tab-bar">
@@ -26,40 +169,18 @@
   </header>
 
   <main class="app-main">
-    <!-- Tab: Cover -->
+    <!-- Cover -->
     <section id="tab-cover" class="tab-content active">
       <div class="card">
         <h2 class="section-title">פרטי הדוח</h2>
-        <div class="form-group">
-          <label>שם מקום / עסק</label>
-          <input type="text" id="field-business" placeholder="שם העסק או המקום">
-        </div>
-        <div class="form-group">
-          <label>שם לקוח</label>
-          <input type="text" id="field-client" placeholder="שם הלקוח">
-        </div>
-        <div class="form-group">
-          <label>כתובת</label>
-          <input type="text" id="field-address" placeholder="כתובת המקום">
-        </div>
-        <div class="form-group">
-          <label>תאריך הסקר</label>
-          <input type="date" id="field-date">
-        </div>
-        <div class="form-group">
-          <label>שם יועץ</label>
-          <input type="text" id="field-consultant" placeholder="שם יועץ הנגישות">
-        </div>
-        <div class="form-group">
-          <label>מספר רישיון</label>
-          <input type="text" id="field-license" placeholder="מספר רישיון יועץ">
-        </div>
-        <div class="form-group">
-          <label>הערות כלליות</label>
-          <textarea id="field-notes" rows="3" placeholder="הערות כלליות לדוח"></textarea>
-        </div>
+        <div class="form-group"><label>שם מקום / עסק</label><input type="text" id="field-business" placeholder="שם העסק או המקום"></div>
+        <div class="form-group"><label>שם לקוח</label><input type="text" id="field-client" placeholder="שם הלקוח"></div>
+        <div class="form-group"><label>כתובת</label><input type="text" id="field-address" placeholder="כתובת המקום"></div>
+        <div class="form-group"><label>תאריך הסקר</label><input type="date" id="field-date"></div>
+        <div class="form-group"><label>שם יועץ</label><input type="text" id="field-consultant" placeholder="שם יועץ הנגישות"></div>
+        <div class="form-group"><label>מספר רישיון</label><input type="text" id="field-license" placeholder="מספר רישיון יועץ"></div>
+        <div class="form-group"><label>הערות כלליות</label><textarea id="field-notes" rows="3" placeholder="הערות כלליות לדוח"></textarea></div>
       </div>
-
       <div class="card">
         <h2 class="section-title">תמונת שער</h2>
         <div class="photo-area" id="photo-area">
@@ -75,31 +196,26 @@
           <button class="btn-ghost" id="btn-remove-photo" style="display:none">הסר תמונה</button>
         </div>
       </div>
-
-      <div class="btn-row bottom-actions">
-        <button class="btn-primary full-width" id="btn-save-draft">שמור טיוטה</button>
-      </div>
+      <div class="bottom-actions"><button class="btn-primary full-width" id="btn-save-draft">שמור טיוטה</button></div>
     </section>
 
-    <!-- Tab: Checklist -->
+    <!-- Checklist -->
     <section id="tab-checklist" class="tab-content">
       <div class="checklist-toolbar">
         <button class="btn-primary" id="btn-add-param">+ הוסף פרמטר</button>
         <button class="btn-secondary" id="btn-load-template">טען תבנית</button>
         <button class="btn-ghost" id="btn-save-template">שמור תבנית</button>
       </div>
-      <div id="checklist-summary" class="checklist-summary">
+      <div class="checklist-summary">
         <span id="summary-ok">תקין: 0</span>
         <span id="summary-nok">לא תקין: 0</span>
         <span id="summary-cost">עלות: ₪0</span>
       </div>
       <div id="checklist-items" class="checklist-items"></div>
-      <div class="btn-row bottom-actions">
-        <button class="btn-primary full-width" id="btn-go-preview">תצוגה מקדימה ← </button>
-      </div>
+      <div class="bottom-actions"><button class="btn-primary full-width" id="btn-go-preview">תצוגה מקדימה ←</button></div>
     </section>
 
-    <!-- Tab: Preview -->
+    <!-- Preview -->
     <section id="tab-preview" class="tab-content">
       <div class="preview-frame-wrap">
         <div id="pdf-preview" class="pdf-preview">
@@ -115,30 +231,21 @@
 </div>
 
 <!-- Modal: Param -->
-<div id="modal-param" class="modal" style="display:none" role="dialog">
-  <div class="modal-backdrop" id="backdrop-param"></div>
+<div id="modal-param" class="modal" style="display:none">
+  <div class="modal-backdrop" id="bd-param"></div>
   <div class="modal-box">
     <h3 class="modal-title">פרמטר נגישות</h3>
-    <div class="form-group">
-      <label>שם הפרמטר</label>
-      <input type="text" id="param-title" placeholder="כגון: שלט כניסה נגישה">
-    </div>
+    <div class="form-group"><label>שם הפרמטר</label><input type="text" id="param-title" placeholder="כגון: שלט כניסה נגישה"></div>
     <div class="form-group">
       <label>סטטוס</label>
       <div class="status-toggle">
-        <button class="status-btn ok" data-val="ok" id="sbtn-ok">✓ תקין</button>
-        <button class="status-btn nok" data-val="nok" id="sbtn-nok">✗ לא תקין</button>
-        <button class="status-btn na" data-val="na" id="sbtn-na">— לא רלוונטי</button>
+        <button class="status-btn ok" id="sbtn-ok" data-val="ok">✓ תקין</button>
+        <button class="status-btn nok" id="sbtn-nok" data-val="nok">✗ לא תקין</button>
+        <button class="status-btn na" id="sbtn-na" data-val="na">— לא רלוונטי</button>
       </div>
     </div>
-    <div class="form-group">
-      <label>ממצאים / הערות</label>
-      <textarea id="param-notes" rows="3" placeholder="תיאור הממצא..."></textarea>
-    </div>
-    <div class="form-group" id="cost-group" style="display:none">
-      <label>עלות משוערת לתיקון (₪)</label>
-      <input type="number" id="param-cost" placeholder="0" min="0">
-    </div>
+    <div class="form-group"><label>ממצאים / הערות</label><textarea id="param-notes" rows="3" placeholder="תיאור הממצא..."></textarea></div>
+    <div class="form-group" id="cost-group" style="display:none"><label>עלות משוערת לתיקון (₪)</label><input type="number" id="param-cost" placeholder="0" min="0"></div>
     <div class="modal-actions">
       <button class="btn-primary" id="btn-param-save">שמור</button>
       <button class="btn-ghost" id="btn-param-cancel">ביטול</button>
@@ -147,61 +254,546 @@
 </div>
 
 <!-- Modal: Load Template -->
-<div id="modal-load-template" class="modal" style="display:none" role="dialog">
-  <div class="modal-backdrop" id="backdrop-load-tpl"></div>
+<div id="modal-load-tpl" class="modal" style="display:none">
+  <div class="modal-backdrop" id="bd-load-tpl"></div>
   <div class="modal-box">
     <h3 class="modal-title">בחר תבנית</h3>
     <div id="load-template-list" class="template-list"></div>
-    <div class="modal-actions">
-      <button class="btn-ghost" id="btn-load-template-close">סגור</button>
-    </div>
+    <div class="modal-actions"><button class="btn-ghost" id="btn-close-load-tpl">סגור</button></div>
   </div>
 </div>
 
 <!-- Modal: Save Template -->
-<div id="modal-save-template" class="modal" style="display:none" role="dialog">
-  <div class="modal-backdrop" id="backdrop-save-tpl"></div>
+<div id="modal-save-tpl" class="modal" style="display:none">
+  <div class="modal-backdrop" id="bd-save-tpl"></div>
   <div class="modal-box">
     <h3 class="modal-title">שמור תבנית</h3>
-    <div class="form-group">
-      <label>שם התבנית</label>
-      <input type="text" id="template-name-input" placeholder="כגון: בניין ציבורי ישן">
-    </div>
+    <div class="form-group"><label>שם התבנית</label><input type="text" id="tpl-name-input" placeholder="כגון: בניין ציבורי ישן"></div>
     <div class="modal-actions">
-      <button class="btn-primary" id="btn-confirm-save-template">שמור</button>
-      <button class="btn-ghost" id="btn-cancel-save-template">ביטול</button>
+      <button class="btn-primary" id="btn-confirm-save-tpl">שמור</button>
+      <button class="btn-ghost" id="btn-cancel-save-tpl">ביטול</button>
     </div>
   </div>
 </div>
 
-<!-- Modal: Templates Manager -->
-<div id="modal-templates" class="modal" style="display:none" role="dialog">
-  <div class="modal-backdrop" id="backdrop-tpl-mgr"></div>
+<!-- Modal: Manage Templates -->
+<div id="modal-manage-tpl" class="modal" style="display:none">
+  <div class="modal-backdrop" id="bd-manage-tpl"></div>
   <div class="modal-box">
     <h3 class="modal-title">תבניות שמורות</h3>
-    <div id="template-list" class="template-list"></div>
-    <div class="modal-actions">
-      <button class="btn-ghost" id="btn-templates-close">סגור</button>
-    </div>
+    <div id="manage-tpl-list" class="template-list"></div>
+    <div class="modal-actions"><button class="btn-ghost" id="btn-close-manage-tpl">סגור</button></div>
   </div>
 </div>
 
 <!-- Modal: Reports -->
-<div id="modal-reports" class="modal" style="display:none" role="dialog">
-  <div class="modal-backdrop" id="backdrop-reports"></div>
+<div id="modal-reports" class="modal" style="display:none">
+  <div class="modal-backdrop" id="bd-reports"></div>
   <div class="modal-box">
     <h3 class="modal-title">דוחות שמורים</h3>
     <div id="reports-list" class="template-list"></div>
-    <div class="modal-actions">
-      <button class="btn-ghost" id="btn-reports-close">סגור</button>
-    </div>
+    <div class="modal-actions"><button class="btn-ghost" id="btn-close-reports">סגור</button></div>
   </div>
 </div>
 
 <div id="toast"></div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"
-  onerror="window._jspdfFailed=true"></script>
-<script src="app.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+var DEFAULT_PARAMS = [
+  'שלט כניסה נגישה','כניסה נגישה למבנה','כניסה לבעלי כלבי שירות',
+  'כפתור חירום / קריאת עזרה','מלתחה / חדר הלבשה','מרחב ממוגן נגיש',
+  'לולאת השראה (hearing loop)','ריהוט ומושבים לפי תקן','מעלית / גישה לכל קומות',
+  'חניית נכים','רמפה / משטח גישה','שירותים נגישים',
+  'ידיות ומעקות','רצפה ומסלולי הנחיה','תאורה מספקת','שילוט ברייל'
+];
+
+var BUILT_IN_TEMPLATES = [
+  { id:'pub_new', name:'בניין ציבורי חדש', params: DEFAULT_PARAMS.slice() },
+  { id:'pub_old', name:'בניין ציבורי ישן', params:['כניסה נגישה למבנה','כפתור חירום / קריאת עזרה','מרחב ממוגן נגיש','שירותים נגישים','ידיות ומעקות','תאורה מספקת','חניית נכים'] },
+  { id:'biz',     name:'עסק / מסחר',       params:['שלט כניסה נגישה','כניסה נגישה למבנה','כניסה לבעלי כלבי שירות','ריהוט ומושבים לפי תקן','שירותים נגישים','חניית נכים','רמפה / משטח גישה'] }
+];
+
+var state = {
+  cover: { business:'', client:'', address:'', date:'', consultant:'', license:'', notes:'' },
+  photo: null, params: [], editingIdx: null, paramStatus: 'ok', draftId: null
+};
+
+// Storage
+function store(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); }catch(e){} }
+function load(k,d){ try{ var v=localStorage.getItem(k); return v?JSON.parse(v):d; }catch(e){ return d; } }
+function getDrafts(){ return load('acc_drafts',[]); }
+function getUserTpls(){ return load('acc_tpls',[]); }
+function saveDraft(d){ var all=getDrafts(), i=all.findIndex(function(x){return x.id===d.id;}); i>=0?all[i]=d:all.unshift(d); store('acc_drafts',all); }
+function deleteDraft(id){ store('acc_drafts',getDrafts().filter(function(d){return d.id!==id;})); }
+function saveTpl(t){ var all=getUserTpls(), i=all.findIndex(function(x){return x.id===t.id;}); i>=0?all[i]=t:all.unshift(t); store('acc_tpls',all); }
+function deleteTpl(id){ store('acc_tpls',getUserTpls().filter(function(t){return t.id!==id;})); }
+
+// Toast
+var _tt;
+function toast(msg, type) {
+  var el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = type ? 'show '+type : 'show';
+  clearTimeout(_tt);
+  _tt = setTimeout(function(){ el.className=''; }, 2800);
+}
+
+// Helpers
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function fmtMoney(n){ try{ return Number(n).toLocaleString(); }catch(e){ return String(n); } }
+function fmtDate(s){
+  if(!s) return '';
+  try{ return new Date(s+'T00:00:00').toLocaleDateString('he-IL',{year:'numeric',month:'long',day:'numeric'}); }
+  catch(e){ return s; }
+}
+function statusLabel(s){ return s==='ok'?'תקין':s==='nok'?'לא תקין':'לא רלוונטי'; }
+function $(id){ return document.getElementById(id); }
+function hide(id){ $(id).style.display='none'; }
+function show(id,d){ $(id).style.display=d||''; }
+
+// Tabs
+function showTab(name) {
+  var btns = document.querySelectorAll('.tab-btn');
+  for(var i=0;i<btns.length;i++){
+    btns[i].classList.toggle('active', btns[i].getAttribute('data-tab')===name);
+  }
+  var tabs = document.querySelectorAll('.tab-content');
+  for(var j=0;j<tabs.length;j++){
+    tabs[j].classList.toggle('active', tabs[j].id==='tab-'+name);
+  }
+  if(name==='preview') renderPreview();
+}
+
+// Cover
+function syncCover(){
+  state.cover.business   = $('field-business').value;
+  state.cover.client     = $('field-client').value;
+  state.cover.address    = $('field-address').value;
+  state.cover.date       = $('field-date').value;
+  state.cover.consultant = $('field-consultant').value;
+  state.cover.license    = $('field-license').value;
+  state.cover.notes      = $('field-notes').value;
+}
+function fillCover(){
+  $('field-business').value   = state.cover.business||'';
+  $('field-client').value     = state.cover.client||'';
+  $('field-address').value    = state.cover.address||'';
+  $('field-date').value       = state.cover.date||'';
+  $('field-consultant').value = state.cover.consultant||'';
+  $('field-license').value    = state.cover.license||'';
+  $('field-notes').value      = state.cover.notes||'';
+  refreshPhoto();
+}
+
+// Photo
+function refreshPhoto(){
+  if(state.photo){
+    $('cover-photo-preview').src = state.photo;
+    show('cover-photo-preview','block');
+    hide('photo-placeholder');
+    show('btn-remove-photo');
+  } else {
+    hide('cover-photo-preview');
+    show('photo-placeholder');
+    hide('btn-remove-photo');
+  }
+}
+
+// Checklist
+function renderChecklist(){
+  var el = $('checklist-items');
+  if(!state.params.length){
+    el.innerHTML = '<div class="empty-state">אין פרמטרים — לחץ "+ הוסף פרמטר" או "טען תבנית"</div>';
+  } else {
+    var html = '';
+    for(var i=0;i<state.params.length;i++){
+      var p = state.params[i], s = p.status||'na';
+      html += '<div class="param-item status-'+s+'">';
+      html += '<div class="param-header"><span class="param-title">'+esc(p.title)+'</span>';
+      html += '<span class="param-status-badge">'+statusLabel(s)+'</span></div>';
+      if(p.notes) html += '<div class="param-notes">'+esc(p.notes)+'</div>';
+      if(p.cost && s==='nok') html += '<div class="param-cost">עלות משוערת: ₪'+fmtMoney(p.cost)+'</div>';
+      html += '<div class="param-actions">';
+      html += '<button class="btn-secondary" onclick="openParamModal('+i+')">עריכה</button>';
+      html += '<button class="btn-ghost btn-danger" onclick="deleteParam('+i+')">מחק</button>';
+      html += '</div></div>';
+    }
+    el.innerHTML = html;
+  }
+  updateSummary();
+}
+
+function updateSummary(){
+  var ok=0, nok=0, cost=0;
+  for(var i=0;i<state.params.length;i++){
+    var p=state.params[i];
+    if(p.status==='ok') ok++;
+    if(p.status==='nok'){ nok++; if(p.cost) cost+=Number(p.cost); }
+  }
+  $('summary-ok').textContent  = 'תקין: '+ok;
+  $('summary-nok').textContent = 'לא תקין: '+nok;
+  $('summary-cost').textContent= 'עלות: ₪'+fmtMoney(cost);
+}
+
+function deleteParam(idx){ state.params.splice(idx,1); renderChecklist(); }
+
+// Param modal
+function openParamModal(idx){
+  state.editingIdx = (idx!==null && idx!==undefined) ? idx : null;
+  var p = state.editingIdx!==null ? state.params[state.editingIdx] : {title:'',status:'ok',notes:'',cost:''};
+  $('param-title').value = p.title||'';
+  $('param-notes').value = p.notes||'';
+  $('param-cost').value  = p.cost||'';
+  state.paramStatus = p.status||'ok';
+  refreshStatusBtns();
+  show('modal-param','flex');
+}
+function closeParamModal(){ hide('modal-param'); }
+function refreshStatusBtns(){
+  var vals = ['ok','nok','na'];
+  for(var i=0;i<vals.length;i++){
+    var b=$('sbtn-'+vals[i]);
+    if(b) b.classList.toggle('active', vals[i]===state.paramStatus);
+  }
+  $('cost-group').style.display = state.paramStatus==='nok' ? '' : 'none';
+}
+function saveParam(){
+  var title = $('param-title').value.trim();
+  if(!title){ toast('נא להזין שם פרמטר','error'); return; }
+  var param = {
+    title: title,
+    status: state.paramStatus,
+    notes: $('param-notes').value.trim(),
+    cost: state.paramStatus==='nok' ? $('param-cost').value : ''
+  };
+  if(state.editingIdx!==null){ state.params[state.editingIdx]=param; }
+  else { state.params.push(param); }
+  renderChecklist();
+  closeParamModal();
+  toast('הפרמטר נשמר','success');
+}
+
+// Templates
+function openLoadTplModal(){
+  var all = BUILT_IN_TEMPLATES.concat(getUserTpls());
+  var html = '';
+  for(var i=0;i<all.length;i++){
+    var t=all[i];
+    html += '<div class="template-item"><div>';
+    html += '<div class="template-item-name">'+esc(t.name)+'</div>';
+    html += '<div class="template-item-meta">'+t.params.length+' פרמטרים</div>';
+    html += '</div><div class="template-item-actions">';
+    html += '<button class="btn-secondary" onclick="loadTpl(\''+t.id+'\')">טען</button>';
+    html += '</div></div>';
+  }
+  $('load-template-list').innerHTML = html || '<div class="empty-state">אין תבניות</div>';
+  show('modal-load-tpl','flex');
+}
+function loadTpl(id){
+  var all = BUILT_IN_TEMPLATES.concat(getUserTpls());
+  var tpl = null;
+  for(var i=0;i<all.length;i++){ if(all[i].id===id){ tpl=all[i]; break; } }
+  if(!tpl) return;
+  state.params = [];
+  for(var j=0;j<tpl.params.length;j++){ state.params.push({title:tpl.params[j],status:'ok',notes:'',cost:''}); }
+  renderChecklist();
+  hide('modal-load-tpl');
+  toast('תבנית "'+tpl.name+'" נטענה','success');
+}
+function openSaveTplModal(){ $('tpl-name-input').value=''; show('modal-save-tpl','flex'); }
+function confirmSaveTpl(){
+  var name = $('tpl-name-input').value.trim();
+  if(!name){ toast('נא להזין שם','error'); return; }
+  var params = [];
+  for(var i=0;i<state.params.length;i++) params.push(state.params[i].title);
+  saveTpl({ id:'user_'+Date.now(), name:name, params:params });
+  hide('modal-save-tpl');
+  toast('התבנית נשמרה','success');
+}
+function openManageTplModal(){
+  var tpls = getUserTpls();
+  var html = '';
+  for(var i=0;i<tpls.length;i++){
+    var t=tpls[i];
+    html += '<div class="template-item"><div>';
+    html += '<div class="template-item-name">'+esc(t.name)+'</div>';
+    html += '<div class="template-item-meta">'+t.params.length+' פרמטרים</div>';
+    html += '</div><div class="template-item-actions">';
+    html += '<button class="btn-ghost btn-danger" onclick="confirmDelTpl(\''+t.id+'\')">מחק</button>';
+    html += '</div></div>';
+  }
+  $('manage-tpl-list').innerHTML = html || '<div class="empty-state">אין תבניות מותאמות אישית</div>';
+  show('modal-manage-tpl','flex');
+}
+function confirmDelTpl(id){
+  if(!confirm('למחוק תבנית זו?')) return;
+  deleteTpl(id);
+  openManageTplModal();
+  toast('התבנית נמחקה');
+}
+
+// Drafts
+function saveDraftNow(){
+  syncCover();
+  var d = {
+    id: state.draftId||('draft_'+Date.now()),
+    savedAt: new Date().toISOString(),
+    business: state.cover.business||'ללא שם',
+    cover: JSON.parse(JSON.stringify(state.cover)),
+    photo: state.photo,
+    params: JSON.parse(JSON.stringify(state.params))
+  };
+  state.draftId = d.id;
+  saveDraft(d);
+  toast('הטיוטה נשמרה','success');
+}
+function openReportsModal(){
+  var drafts = getDrafts();
+  var html = '';
+  for(var i=0;i<drafts.length;i++){
+    var d=drafts[i];
+    html += '<div class="template-item"><div>';
+    html += '<div class="template-item-name">'+esc(d.business)+'</div>';
+    html += '<div class="template-item-meta">'+new Date(d.savedAt).toLocaleDateString('he-IL')+'</div>';
+    html += '</div><div class="template-item-actions">';
+    html += '<button class="btn-secondary" onclick="loadDraftById(\''+d.id+'\')">פתח</button>';
+    html += '<button class="btn-ghost btn-danger" onclick="confirmDelDraft(\''+d.id+'\')">מחק</button>';
+    html += '</div></div>';
+  }
+  $('reports-list').innerHTML = html || '<div class="empty-state">אין דוחות שמורים</div>';
+  show('modal-reports','flex');
+}
+function loadDraftById(id){
+  var drafts=getDrafts(), draft=null;
+  for(var i=0;i<drafts.length;i++){ if(drafts[i].id===id){ draft=drafts[i]; break; } }
+  if(!draft) return;
+  state.cover   = JSON.parse(JSON.stringify(draft.cover));
+  state.photo   = draft.photo||null;
+  state.params  = JSON.parse(JSON.stringify(draft.params||[]));
+  state.draftId = draft.id;
+  fillCover();
+  renderChecklist();
+  hide('modal-reports');
+  showTab('cover');
+  toast('הדוח נטען','success');
+}
+function confirmDelDraft(id){
+  if(!confirm('למחוק דוח זה?')) return;
+  deleteDraft(id);
+  openReportsModal();
+  toast('הדוח נמחק');
+}
+
+// Preview
+function renderPreview(){
+  syncCover();
+  var c=state.cover, ok=0, nok=0, na=0, cost=0;
+  for(var i=0;i<state.params.length;i++){
+    var p=state.params[i];
+    if(p.status==='ok') ok++;
+    else if(p.status==='nok'){ nok++; if(p.cost) cost+=Number(p.cost); }
+    else na++;
+  }
+  var photoHtml = state.photo ? '<img class="cover-photo" src="'+state.photo+'" alt="">' : '';
+  var itemsHtml = '';
+  if(!state.params.length){
+    itemsHtml = '<div class="empty-state">לא הוגדרו פרמטרים</div>';
+  } else {
+    for(var j=0;j<state.params.length;j++){
+      var p2=state.params[j], s=p2.status||'na';
+      itemsHtml += '<div class="preview-checklist-item '+s+'">';
+      itemsHtml += '<div class="preview-item-title">'+esc(p2.title)+'</div>';
+      itemsHtml += '<div class="preview-item-status">'+statusLabel(s)+'</div>';
+      if(p2.notes) itemsHtml += '<div class="preview-item-notes">'+esc(p2.notes)+'</div>';
+      if(p2.cost && s==='nok') itemsHtml += '<div class="preview-item-cost">עלות משוערת: ₪'+fmtMoney(p2.cost)+'</div>';
+      itemsHtml += '</div>';
+    }
+  }
+  $('pdf-preview').innerHTML =
+    '<div class="preview-page">'+
+    '<div class="preview-header-bar"><div class="preview-logo-area">נגישות</div><div class="preview-page-title">סקר נגישות מתו"ס</div></div>'+
+    '<div class="cover-business-name">'+(esc(c.business)||'שם העסק')+'</div>'+
+    '<div class="cover-subtitle">סקר נגישות מתו"ס</div>'+
+    photoHtml+
+    '<table class="cover-details-table">'+
+    (c.client     ? '<tr><td>לקוח:</td><td>'+esc(c.client)+'</td></tr>' : '')+
+    (c.address    ? '<tr><td>כתובת:</td><td>'+esc(c.address)+'</td></tr>' : '')+
+    (c.date       ? '<tr><td>תאריך הסקר:</td><td>'+fmtDate(c.date)+'</td></tr>' : '')+
+    (c.consultant ? '<tr><td>יועץ נגישות:</td><td>'+esc(c.consultant)+'</td></tr>' : '')+
+    (c.license    ? '<tr><td>מספר רישיון:</td><td>'+esc(c.license)+'</td></tr>' : '')+
+    (c.notes      ? '<tr><td>הערות:</td><td>'+esc(c.notes)+'</td></tr>' : '')+
+    '</table>'+
+    '<div class="preview-footer-bar"><span>סקר נגישות מתו"ס</span><span>'+fmtDate(c.date)+'</span></div>'+
+    '</div>'+
+    '<div class="preview-page">'+
+    '<div class="preview-header-bar"><div class="preview-logo-area">נגישות</div><div class="preview-page-title">סיכום ממצאים</div></div>'+
+    '<div class="preview-section-title">סיכום</div>'+
+    '<div class="summary-box">'+
+    '<div class="summary-stat"><span class="summary-stat-num" style="color:#198754">'+ok+'</span><span class="summary-stat-label">תקין</span></div>'+
+    '<div class="summary-stat"><span class="summary-stat-num" style="color:#dc3545">'+nok+'</span><span class="summary-stat-label">לא תקין</span></div>'+
+    '<div class="summary-stat"><span class="summary-stat-num">'+na+'</span><span class="summary-stat-label">לא רלוונטי</span></div>'+
+    '<div class="summary-stat"><span class="summary-stat-num" style="color:#856404">₪'+fmtMoney(cost)+'</span><span class="summary-stat-label">עלות משוערת</span></div>'+
+    '</div>'+
+    '<div class="preview-section-title">פרמטרי נגישות</div>'+
+    itemsHtml+
+    '<div class="preview-footer-bar"><span>'+esc(c.business)+'</span><span>יועץ: '+esc(c.consultant)+'</span></div>'+
+    '</div>';
+}
+
+// PDF
+function generatePDF(){
+  if(!window.jspdf || !window.jspdf.jsPDF){
+    toast('ספריית PDF לא נטענה — נדרש חיבור אינטרנט','error');
+    return;
+  }
+  syncCover();
+  var c=state.cover;
+  var doc=new window.jspdf.jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+  var W=210,H=297,M=18,cW=W-M*2,y=0;
+  function rgb(h){ return [parseInt(h.slice(1,3),16),parseInt(h.slice(3,5),16),parseInt(h.slice(5,7),16)]; }
+  var blue=rgb('#1a4fa0'),pale=rgb('#e8f0fb'),green=rgb('#198754'),red=rgb('#dc3545'),gray=rgb('#6c757d');
+  function font(sz,st,col){ doc.setFontSize(sz); doc.setFont('helvetica',st||'normal'); doc.setTextColor.apply(doc,col||[30,30,30]); }
+  function hdr(t){ doc.setFillColor.apply(doc,blue); doc.rect(0,0,W,18,'F'); font(11,'bold',[255,255,255]); doc.text('סקר נגישות מתו"ס',W-M,11,{align:'right'}); doc.text(t,M,11,{align:'left'}); y=24; }
+  function ftr(n){ doc.setFillColor.apply(doc,pale); doc.rect(0,H-14,W,14,'F'); font(9,'normal',blue); doc.text('סקר נגישות | '+(c.business||''),W-M,H-5,{align:'right'}); doc.text('עמוד '+n,M,H-5,{align:'left'}); }
+  function newPg(t,n){ doc.addPage(); hdr(t); ftr(n); y=24; }
+  function chk(need,t,n){ if(y+need>H-20) newPg(t,n); }
+
+  hdr('עמוד שער'); ftr(1);
+  font(20,'bold',blue); doc.text(c.business||'שם העסק',W/2,y+8,{align:'center'}); y+=16;
+  font(12,'normal',gray); doc.text('סקר נגישות מתו"ס',W/2,y,{align:'center'}); y+=10;
+  if(state.photo){ try{ doc.addImage(state.photo,'JPEG',M,y,cW,56,undefined,'MEDIUM'); y+=64; }catch(e){} }
+  doc.setDrawColor.apply(doc,pale); doc.setLineWidth(0.5); doc.line(M,y,W-M,y); y+=6;
+  var rows=[['לקוח',c.client],['כתובת',c.address],['תאריך הסקר',fmtDate(c.date)],['יועץ נגישות',c.consultant],['מספר רישיון',c.license]];
+  if(c.notes) rows.push(['הערות',c.notes]);
+  for(var ri=0;ri<rows.length;ri++){
+    if(!rows[ri][1]) continue;
+    font(10,'bold',blue); doc.text(rows[ri][0]+':',W-M,y,{align:'right'});
+    font(10,'normal',[30,30,30]); doc.text(String(rows[ri][1]),W-M-36,y,{align:'right'}); y+=8;
+  }
+
+  var pageNum=2; newPg('ממצאים וסיכום',pageNum);
+  var ok2=0,nok2=0,na2=0,tc=0;
+  for(var i=0;i<state.params.length;i++){
+    var p=state.params[i];
+    if(p.status==='ok') ok2++;
+    else if(p.status==='nok'){ nok2++; if(p.cost) tc+=Number(p.cost); }
+    else na2++;
+  }
+  doc.setFillColor.apply(doc,pale); doc.roundedRect(M,y,cW,24,3,3,'F');
+  font(10,'bold',blue); doc.text('סיכום ממצאים',W-M-2,y+6,{align:'right'});
+  var sumItems=[{l:'תקין',v:ok2,c:green},{l:'לא תקין',v:nok2,c:red},{l:'לא רלוונטי',v:na2,c:gray},{l:'עלות משוערת',v:'₪'+fmtMoney(tc),c:[133,100,4]}];
+  for(var si=0;si<sumItems.length;si++){
+    var sx=W-M-30-si*42;
+    font(13,'bold',sumItems[si].c); doc.text(String(sumItems[si].v),sx,y+14,{align:'center'});
+    font(8,'normal',gray); doc.text(sumItems[si].l,sx,y+20,{align:'center'});
+  }
+  y+=30;
+  font(11,'bold',blue); doc.text('פרמטרי נגישות',W-M,y,{align:'right'}); y+=6;
+  doc.setDrawColor.apply(doc,pale); doc.setLineWidth(0.5); doc.line(M,y,W-M,y); y+=6;
+
+  var sC={ok:green,nok:red,na:gray}, sL={ok:'תקין',nok:'לא תקין',na:'לא רלוונטי'};
+  for(var pi=0;pi<state.params.length;pi++){
+    var p2=state.params[pi], s2=p2.status||'na', col=sC[s2];
+    var nl=p2.notes?doc.splitTextToSize(p2.notes,cW-10):[];
+    var ih=14+nl.length*5+(p2.cost&&s2==='nok'?5:0);
+    chk(ih,'ממצאים (המשך)',pageNum);
+    var bg=s2==='ok'?[240,250,245]:s2==='nok'?[255,245,245]:[248,249,250];
+    doc.setFillColor.apply(doc,bg); doc.roundedRect(M,y,cW-3,ih-2,2,2,'F');
+    doc.setFillColor.apply(doc,col); doc.rect(W-M,y,3,ih-2,'F');
+    font(10,'bold',[30,30,30]); doc.text(p2.title,W-M-5,y+6,{align:'right'});
+    font(9,'bold',col); doc.text(sL[s2],M+38,y+6,{align:'left'});
+    var iy=y+12;
+    for(var li=0;li<nl.length;li++){ font(9,'normal',gray); doc.text(nl[li],W-M-5,iy,{align:'right'}); iy+=5; }
+    if(p2.cost&&s2==='nok'){ font(9,'bold',[133,100,4]); doc.text('עלות משוערת: ₪'+fmtMoney(p2.cost),M+5,iy); }
+    y+=ih;
+  }
+  var fn='סקר_נגישות_'+(c.business||'דוח').replace(/\s+/g,'_')+'.pdf';
+  doc.save(fn);
+  toast('הורד בהצלחה!','success');
+}
+
+// Init
+window.onload = function() {
+  var df = document.getElementById('field-date');
+  if(df && !df.value){
+    df.value = new Date().toISOString().split('T')[0];
+    state.cover.date = df.value;
+  }
+
+  state.params = [];
+  for(var i=0;i<DEFAULT_PARAMS.length;i++){
+    state.params.push({title:DEFAULT_PARAMS[i],status:'ok',notes:'',cost:''});
+  }
+  renderChecklist();
+
+  // Tab buttons
+  var tabBtns = document.querySelectorAll('.tab-btn');
+  for(var ti=0;ti<tabBtns.length;ti++){
+    (function(btn){
+      btn.onclick = function(){ showTab(btn.getAttribute('data-tab')); };
+    })(tabBtns[ti]);
+  }
+
+  // Photo
+  document.getElementById('photo-area').onclick = function(){ document.getElementById('photo-input').click(); };
+  document.getElementById('btn-pick-photo').onclick = function(e){ e.stopPropagation(); document.getElementById('photo-input').click(); };
+  document.getElementById('photo-input').onchange = function(){
+    var file = this.files[0]; if(!file) return;
+    var reader = new FileReader();
+    reader.onload = function(ev){ state.photo=ev.target.result; refreshPhoto(); };
+    reader.readAsDataURL(file);
+  };
+  document.getElementById('btn-remove-photo').onclick = function(e){
+    e.stopPropagation(); state.photo=null; document.getElementById('photo-input').value=''; refreshPhoto();
+  };
+
+  // Cover
+  document.getElementById('btn-save-draft').onclick = saveDraftNow;
+
+  // Checklist
+  document.getElementById('btn-add-param').onclick   = function(){ openParamModal(null); };
+  document.getElementById('btn-load-template').onclick = openLoadTplModal;
+  document.getElementById('btn-save-template').onclick = openSaveTplModal;
+  document.getElementById('btn-go-preview').onclick   = function(){ showTab('preview'); };
+
+  // Preview
+  document.getElementById('btn-refresh-preview').onclick = renderPreview;
+  document.getElementById('btn-download-pdf').onclick    = generatePDF;
+
+  // Header
+  document.getElementById('btn-reports').onclick   = openReportsModal;
+  document.getElementById('btn-templates').onclick = openManageTplModal;
+
+  // Param modal
+  document.getElementById('btn-param-save').onclick   = saveParam;
+  document.getElementById('btn-param-cancel').onclick = closeParamModal;
+  var svals = ['ok','nok','na'];
+  for(var si=0;si<svals.length;si++){
+    (function(v){
+      var b=document.getElementById('sbtn-'+v);
+      if(b) b.onclick = function(){ state.paramStatus=v; refreshStatusBtns(); };
+    })(svals[si]);
+  }
+  document.getElementById('bd-param').onclick = function(){ hide('modal-param'); };
+
+  // Load template modal
+  document.getElementById('btn-close-load-tpl').onclick = function(){ hide('modal-load-tpl'); };
+  document.getElementById('bd-load-tpl').onclick = function(){ hide('modal-load-tpl'); };
+
+  // Save template modal
+  document.getElementById('btn-confirm-save-tpl').onclick = confirmSaveTpl;
+  document.getElementById('btn-cancel-save-tpl').onclick  = function(){ hide('modal-save-tpl'); };
+  document.getElementById('bd-save-tpl').onclick = function(){ hide('modal-save-tpl'); };
+
+  // Manage templates modal
+  document.getElementById('btn-close-manage-tpl').onclick = function(){ hide('modal-manage-tpl'); };
+  document.getElementById('bd-manage-tpl').onclick = function(){ hide('modal-manage-tpl'); };
+
+  // Reports modal
+  document.getElementById('btn-close-reports').onclick = function(){ hide('modal-reports'); };
+  document.getElementById('bd-reports').onclick = function(){ hide('modal-reports'); };
+};
+</script>
 </body>
 </html>
